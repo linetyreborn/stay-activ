@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stay Active</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            position: relative;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .status-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .active {
+            color: #00ff00;
+        }
+        .inactive {
+            color: #ff0000;
+        }
+        form {
+            text-align: center;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #ff0000;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .close-button:hover {
+            color: #ff6666;
+        }
+		        /* Animate the status text */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .status p {
+            animation: pulse 1s infinite alternate;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="close-button" onclick="closeApp()">✖</button>
+        <h1>Stay Active</h1>
+        <div class="status {% if is_paused %}inactive{% else %}active{% endif %}">
+            <div class="status-icon">{% if is_paused %}😴{% else %}😀{% endif %}</div>
+            <p>Script is {% if is_paused %}<span style="color: red;">paused</span>{% else %}<span style="color: green;">active</span>{% endif %}</p>
+        </div>
+        <form action="/toggle" method="post">
+            <input type="submit" value="{% if is_paused %}Resume{% else %}Pause{% endif %}">
+        </form>
+        <h2>Project Requirements:</h2>
+        <ul>
+            <li>Simulate mouse movement by one pixel up and then one pixel down every 15 seconds.</li>
+            <li>Pause the script when the PC is locked and resume when unlocked.</li>
+            <li>Provide a web interface to pause and resume the script.</li>
+        </ul>
+    </div>
+	<script>
+		function closeApp() {
+			fetch('/shutdown')
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Failed to close app');
+					}
+					return response.text();
+				})
+				.then(data => {
+					console.log(data);
+					window.close(); // Close the current tab
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					window.close(); 
+				});
+		}
+	</script>
+</body>
+</html>
