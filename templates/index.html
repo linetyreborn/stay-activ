@@ -119,7 +119,9 @@
 				})
 				.catch(error => {
 					console.error('Error:', error);
-					window.close(); 
+					setTimeout(() => {
+						window.close();
+					}, 1000); 
 				});
 		}
 	</script>
