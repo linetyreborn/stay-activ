@@ -6,6 +6,7 @@ import win32api
 import os
 import signal
 import sys
+import threading
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
@@ -19,9 +20,6 @@ def move_mouse():
 def press_shift():
     pyautogui.keyDown('shift')
     pyautogui.keyUp('shift')
-
-def is_locked():
-    return bool(win32api.LockWorkStation())
 
 last_position = pyautogui.position()
 is_paused = False
@@ -48,16 +46,12 @@ def shutdown_server():
 
 @app.route('/shutdown', methods=['GET'])
 def shutdown():
-    try:
-        shutdown_server()
-        os.kill(os.getpid(), signal.SIGINT)
-        return 'Server shutting down...'
-    except RuntimeError:
-        os.kill(os.getpid(), signal.SIGINT)
-        return 'Unable to shutdown server', 500
+    shutdown_server()
+    os.kill(os.getpid(), signal.SIGINT)
+    return 'Server shutting down...'
 
-if __name__ == '__main__':
-    app.run()
+def background_task():
+    global last_position, last_active_time, is_paused
     while True:
         if not is_paused:
             current_position = pyautogui.position()
@@ -65,10 +59,15 @@ if __name__ == '__main__':
                 inactive_time = time.time() - last_active_time
                 if inactive_time >= 15:
                     move_mouse()
-                    press_shift()  # Pressing Shift key to keep the PC awake
+                    press_shift()
                 else:
                     logging.info('Inactive for %.1f seconds.', inactive_time)
             else:
                 last_position = current_position
                 last_active_time = time.time()
         time.sleep(1)
+
+if __name__ == '__main__':
+    # Start the background task in a separate thread
+    threading.Thread(target=background_task, daemon=True).start()
+    app.run()
